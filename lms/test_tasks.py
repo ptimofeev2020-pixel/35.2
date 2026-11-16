@@ -74,7 +74,9 @@ class BlockInactiveUsersTestCase(TestCase):
         blocked = block_inactive_users()
 
         self.assertEqual(blocked, 1)
-        old.refresh_from_db(); fresh.refresh_from_db(); never.refresh_from_db()
+        old.refresh_from_db()
+        fresh.refresh_from_db()
+        never.refresh_from_db()
         self.assertFalse(old.is_active)
         self.assertTrue(fresh.is_active)
         self.assertTrue(never.is_active)

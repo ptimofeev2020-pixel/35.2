@@ -1,8 +1,13 @@
+from decimal import Decimal
+from unittest.mock import patch
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from users.models import User
+from lms.models import Course
+from users.models import Payment, User
+from users.services import StripeServiceError, convert_rub_to_kopecks
 
 
 class UserTestCase(APITestCase):
@@ -52,14 +57,6 @@ class UserTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-from decimal import Decimal
-from unittest.mock import patch
-
-from lms.models import Course
-from users.models import Payment
-from users.services import StripeServiceError, convert_rub_to_kopecks
-
-
 class StripePaymentTestCase(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(email='pay@mail.ru', password='Pass12345!')
@@ -69,7 +66,10 @@ class StripePaymentTestCase(APITestCase):
     def test_convert_to_kopecks(self):
         self.assertEqual(convert_rub_to_kopecks('1500.50'), 150050)
 
-    @patch('users.views.create_stripe_session', return_value=('cs_test_1', 'https://checkout.stripe.com/pay/cs_test_1'))
+    @patch(
+        'users.views.create_stripe_session',
+        return_value=('cs_test_1', 'https://checkout.stripe.com/pay/cs_test_1'),
+    )
     @patch('users.views.create_stripe_price', return_value='price_1')
     @patch('users.views.create_stripe_product', return_value='prod_1')
     def test_create_payment(self, mock_product, mock_price, mock_session):
